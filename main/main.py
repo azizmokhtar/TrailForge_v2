@@ -103,7 +103,7 @@ async def subscribe_user_fills(user_address: str,
                                         # Fetch needed data for calculations
                                         position_data = pos.get("position", {})
                                         coin = position_data.get("coin", "UNKNOWN")
-                                        print(f"Iterating through {coin}:")
+                                        #print(f"Iterating through {coin}:")
                                         szi = float(position_data.get("szi", 0))
                                         entry_px = float(position_data.get("entryPx", 0))
                                         position_value = float(position_data.get("positionValue", 0))
@@ -129,38 +129,40 @@ async def subscribe_user_fills(user_address: str,
                                             logger.info(f"ttp activated for {coin}")
                                             continue
                                         # If trailing is active and we hit TTP limit
-                                        if position["ttp_active"] == True and position["pnl"] - pnl_percent >= ttp_percent:
-                                            ticker = format_symbol(coin)
-                                            try:
-                                                await hyperliquid_executor.leveraged_market_close_Order(ticker, "buy")
-                                                position = position_manager.get_position(coin)
-                                                limit_orders = position["limit_orders"]
-                                                await hyperliquid_executor.cancelLimitOrders(deviations, ticker, limit_orders)
-                                                logger.info(f"Closed {coin} position with {pnl_percent}%")
-                                                await telegram.send_message(text=f'Closed {coin} position with {pnl_percent}%')
-                                                # Check if we sent a removal of symbol order through Telegram
-                                                remove_decision = await symbol_manager.is_pending_removal(coin)
-                                                if remove_decision == False:
-                                                    logger.info(f"{coin} still useful, opening new position.")
-                                                    await asyncio.sleep(1)
-                                                    order = await hyperliquid_executor.leveragedMarketOrder(ticker, "buy", buy_size)
-                                                    limit_orders = await hyperliquid_executor.create_batch_limit_buy_order_custom_dca(
-                                                        order[0], buy_size, multiplier, ticker, deviations
-                                                    )
-                                                    await telegram.send_message(text=f'Opening {coin} first position.')
-                                                    position_manager.update_position(
-                                                        symbol=coin, average_buy_price=order[0], pnl=0.0,
-                                                        size_in_dollars=11, size_in_quote=69, limit_orders=limit_orders, ttp_active=False
-                                                    )
-                                                    logger.info(f"finished opening new {coin} position.")
-                                                # If no removal decision detected
-                                                else:
-                                                    await telegram.send_message(text=f'exited {coin} position safely, no more buying.')
-                                                    logger.info(f"exited {coin} position safely, no more buying.")
-                                                    position_manager.delete_position(coin)
-                                            except Exception as e:
-                                                logger.error(f"Error with closing/opening new order for {coin}: {e}")
-                                                await telegram.send_message(text=f'ERROR - Error with closing/opening new order:{e}')
+                                        if position["ttp_active"]:
+                                            if position["pnl"] - pnl_percent >= ttp_percent:
+                                                try:
+                                                    ticker = format_symbol(coin)
+                                                    await hyperliquid_executor.leveraged_market_close_Order(ticker, "buy")
+                                                    position = position_manager.get_position(coin)
+                                                    limit_orders = position["limit_orders"]
+                                                    await hyperliquid_executor.cancelLimitOrders(deviations, ticker, limit_orders)
+                                                    logger.info(f"Closed {coin} position with {pnl_percent}%")
+                                                    await telegram.send_message(text=f'Closed {coin} position with {pnl_percent}%')
+                                                    # Check if we sent a removal of symbol order through Telegram
+                                                    remove_decision = await symbol_manager.is_pending_removal(coin)
+                                                    if remove_decision == False:
+                                                        logger.info(f"{coin} still useful, opening new position.")
+                                                        await asyncio.sleep(1)
+                                                        order = await hyperliquid_executor.leveragedMarketOrder(ticker, "buy", buy_size)
+                                                        limit_orders = await hyperliquid_executor.create_batch_limit_buy_order_custom_dca(
+                                                            order[0], buy_size, multiplier, ticker, deviations
+                                                        )
+                                                        await telegram.send_message(text=f'Opening {coin} first position.')
+                                                        position_manager.update_position(
+                                                            symbol=coin, average_buy_price=order[0], pnl=0.0,
+                                                            size_in_dollars=11, size_in_quote=69, limit_orders=limit_orders, ttp_active=False
+                                                        )
+                                                        await asyncio.sleep(1)
+                                                        logger.info(f"finished opening new {coin} position.")
+                                                    # If no removal decision detected
+                                                    else:
+                                                        await telegram.send_message(text=f'exited {coin} position safely, no more buying.')
+                                                        logger.info(f"exited {coin} position safely, no more buying.")
+                                                        position_manager.delete_position(coin)
+                                                except Exception as e:
+                                                    logger.error(f"Error with closing/opening new order for {coin}: {e}")
+                                                    await telegram.send_message(text=f'ERROR - Error with closing/opening new order:{e}')
                                         # If still not in profit or ttp active
                                         elif position_manager.has_position(coin):
                                             position_manager.update_position(
