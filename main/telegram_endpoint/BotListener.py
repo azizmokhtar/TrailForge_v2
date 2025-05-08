@@ -1,6 +1,7 @@
 from telegram import Update
 from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes
-
+import logging
+logging.getLogger("httpx").setLevel(logging.WARNING)
 class TelegramBotListener:
     def __init__(self, token, symbol_manager):
         self.token = token
@@ -12,12 +13,7 @@ class TelegramBotListener:
             return
         self.started = True
 
-        application = (
-            ApplicationBuilder()
-            .token(self.token)
-            .disable_request_logging(True)
-            .build()
-        )
+        application = ApplicationBuilder().token(self.token).build()
         application.add_handler(CommandHandler("add", self.add_symbol))
         application.add_handler(CommandHandler("remove", self.remove_symbol))
         application.add_handler(CommandHandler("list", self.list_symbols))
