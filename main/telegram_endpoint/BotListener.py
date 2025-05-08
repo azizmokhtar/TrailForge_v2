@@ -12,7 +12,12 @@ class TelegramBotListener:
             return
         self.started = True
 
-        application = ApplicationBuilder().token(self.token).build()
+        application = (
+            ApplicationBuilder()
+            .token(self.token)
+            .disable_request_logging(True)
+            .build()
+        )
         application.add_handler(CommandHandler("add", self.add_symbol))
         application.add_handler(CommandHandler("remove", self.remove_symbol))
         application.add_handler(CommandHandler("list", self.list_symbols))
