@@ -132,6 +132,7 @@ async def subscribe_user_fills(user_address: str,
                                         if position["ttp_active"]:
                                             if position["pnl"] - pnl_percent >= ttp_percent:
                                                 try:
+                                                    logger.info(f"Exiting {coin} position in profit")
                                                     ticker = format_symbol(coin)
                                                     await hyperliquid_executor.leveraged_market_close_Order(ticker, "buy")
                                                     position = position_manager.get_position(coin)
@@ -170,7 +171,7 @@ async def subscribe_user_fills(user_address: str,
                                                 size_in_dollars=position_value, size_in_quote=szi
                                             )
 
-                                    print("Finished checking on old/existing tickers, time to see if we have new...")
+                                    #print("Finished checking on old/existing tickers, time to see if we have new...")
                                     # Check the telegram symbol manager: if we have a new ordered position(Position not in position manager), open it and save it in position_manager 
                                     current_active_symbols = await symbol_manager.get_active_symbols()
                                     ##print(current_active_symbols)
@@ -179,7 +180,7 @@ async def subscribe_user_fills(user_address: str,
                                             if not position_manager.has_position(symbol):
                                                 #logger.info(f"New symbol added: {symbol}, opening position...")
                                                 try:
-                                                    logger.info(f"New symbol added: {symbol}, opening position... ")
+                                                    logger.info(f"New symbol added on telegram: {symbol}, opening position... ")
                                                     ticker = format_symbol(symbol)
                                                     await hyperliquid_executor.setLeverage(leverage, ticker)
                                                     order = await hyperliquid_executor.leveragedMarketOrder(ticker, "buy", buy_size)
