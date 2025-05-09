@@ -244,7 +244,7 @@ async def main():
     buy_size = int(os.getenv("BUY_SIZE"))
     multiplier = float(os.getenv("MULTIPLIER"))
     deviations = ast.literal_eval(os.getenv("DEVIATIONS"))
-    deviations = [int(value) for value in deviations]
+    deviations = [float(value) for value in deviations]
     user_address = os.getenv("PUBLIC_USER_ADDRESS")
     initial_symbols = ast.literal_eval(os.getenv("INITIAL_SYMBOLS"))
     TELEGRAM_LISTENER_BOT_TOKEN = os.getenv("TELEGRAM_LISTENER_TOKEN")
@@ -281,9 +281,11 @@ async def main():
             )
             logger.info(f"Opened first position for {symbol}")
             await telegram.send_message(text=f'Opened first position for: {symbol}')
+            await asyncio.sleep(10) 
         except Exception as e:
             logger.error(f"Error placing first order for {symbol}: {e}")
             await telegram.send_message(text=f'ERROR - Error placing first order for: {symbol}')
+
 
     logger.info("Firing telegram listener in background...")
     # Starrt telegram listener on background

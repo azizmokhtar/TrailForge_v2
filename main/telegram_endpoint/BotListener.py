@@ -17,6 +17,7 @@ class TelegramBotListener:
         application.add_handler(CommandHandler("add", self.add_symbol))
         application.add_handler(CommandHandler("remove", self.remove_symbol))
         application.add_handler(CommandHandler("list", self.list_symbols))
+        #application.add_handler(CommandHandler("killswitch", self.kill_switch)) TODO in the future
 
         print("Telegram bot is running...")
 
@@ -55,3 +56,6 @@ class TelegramBotListener:
             await update.message.reply_text("📈 Active Symbols:\n" + "\n".join(symbols))
         else:
             await update.message.reply_text("❌ No active symbols.")
+
+
+    
