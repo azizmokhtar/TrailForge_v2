@@ -120,7 +120,7 @@ async def subscribe_user_fills(user_address: str,
                                             await telegram.send_message(text=f'ERROR: open {coin} position found, where we do not know its source! Saved in db but will be a problem by closing.')
                                             continue
                                         # If we are over pnl goal, activate trailing take profit 
-                                        if pnl_percent >= TP and position["ttp_active"] == False:
+                                        elif pnl_percent >= TP and position["ttp_active"] == False:
                                             print(f"pnl percent hit for {coin}, activating trailing")
                                             position_manager.update_position(
                                                 symbol=coin, average_buy_price=entry_px, pnl=pnl_percent,
@@ -129,7 +129,7 @@ async def subscribe_user_fills(user_address: str,
                                             logger.info(f"ttp activated for {coin}")
                                             continue
                                         # If trailing is active and we hit TTP limit
-                                        if position["ttp_active"]:
+                                        elif position["ttp_active"]:
                                             if position["pnl"] - pnl_percent >= ttp_percent:
                                                 try:
                                                     logger.info(f"Exiting {coin} position in profit")
@@ -255,6 +255,7 @@ async def main():
     logger.info("Initializing...")
     telegram = Messenger(TELEGRAM_MESSENGER_BOT_TOKEN, TELEGRAM_CHAT_ID)
     position_manager = PositionCatalogue()
+    position_manager.clear_all_positions()
     symbol_manager = SymbolManager(initial_symbols)
     hyperliquid_executor = await HyperliquidUtils.create()
     bot_listener = TelegramBotListener(TELEGRAM_LISTENER_BOT_TOKEN, symbol_manager)
@@ -287,6 +288,7 @@ async def main():
     # Starrt telegram listener on background
     asyncio.create_task(bot_listener.start())  
     logger.info("Running main loop...")
+    await asyncio.sleep(5) 
     await subscribe_user_fills( # Start WebSocket processing
         user_address=user_address,
         buy_size=buy_size,
