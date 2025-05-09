@@ -36,6 +36,7 @@ class PositionCatalogue:
             "symbol": symbol,
             "average_buy_price": average_buy_price,
             "pnl": pnl,
+            "peak_pnl": max(pnl, 0.0), 
             "size_in_dollars": size_in_dollars,
             "size_in_quote": size_in_quote,
             "limit_orders": limit_orders,
@@ -54,20 +55,30 @@ class PositionCatalogue:
         """
         return self.positions.get(symbol)
 
-    def update_position(self, symbol: str, **kwargs):
-        """
-        Update one or more parameters of an existing position.
-        
-        Args:
-            symbol (str): The symbol of the position to update.
-            kwargs: Key-value pairs of attributes to update.
-        
-        Raises:
-            KeyError: If no position with the given symbol exists.
-        """
-        if symbol not in self.positions:
-            raise KeyError(f"No position found with symbol '{symbol}'.")
-        self.positions[symbol].update(kwargs)
+    def update_position(self, symbol, average_buy_price=None, pnl=None, size_in_dollars=None, size_in_quote=None, limit_orders=None, ttp_active=None):
+        try:
+            if symbol not in self.positions:
+                return
+
+            position = self.positions[symbol]
+
+            if average_buy_price is not None:
+                position["average_buy_price"] = average_buy_price
+            if pnl is not None:
+                position["pnl"] = pnl
+                position["peak_pnl"] = max(position.get("peak_pnl", pnl), pnl)
+            if size_in_dollars is not None:
+                position["size_in_dollars"] = size_in_dollars
+            if size_in_quote is not None:
+                position["size_in_quote"] = size_in_quote
+            if limit_orders is not None:
+                position["limit_orders"] = limit_orders
+            if ttp_active is not None:
+                position["ttp_active"] = ttp_active
+        except Exception as e:
+            print(f"Error updating position: {e}")
+
+ 
 
     def delete_position(self, symbol: str):
         """
