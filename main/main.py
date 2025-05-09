@@ -130,6 +130,7 @@ async def subscribe_user_fills(user_address: str,
                                             continue
                                         # If trailing is active and we hit TTP limit
                                         elif position["ttp_active"]:
+                                            print(f"{coin} previous pnl: {position["pnl"]}, current pnl: {pnl_percent}, differnce={position["pnl"] - pnl_percent} ")
                                             if position["pnl"] - pnl_percent >= ttp_percent:
                                                 try:
                                                     logger.info(f"Exiting {coin} position in profit")
