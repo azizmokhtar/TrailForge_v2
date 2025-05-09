@@ -469,6 +469,7 @@ class HyperliquidUtils:
         #print(deviations)
 
         for deviation in deviations:
+            #print(f"opening limit order for deviation: {deviation}")
             #print(deviation)
             price = pivot_price * (1 - deviation/100)
            # print(f"price is {price}")
