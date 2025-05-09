@@ -83,6 +83,13 @@ class PositionCatalogue:
             raise KeyError(f"No position found with symbol '{symbol}'.")
         del self.positions[symbol]
 
+    def clear_all_positions(self):
+        """
+        Clear all stored positions. Use this with caution!
+        """
+        self.positions.clear()
+        #print("All positions cleared.")
+
     def has_position(self, symbol: str) -> bool:
         """
         Check if a position with the given symbol exists in the collection.
