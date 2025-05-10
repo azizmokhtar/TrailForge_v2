@@ -130,7 +130,9 @@ async def subscribe_user_fills(user_address: str,
                                             continue
                                         # If trailing is active and we hit TTP limit
                                         elif position["ttp_active"]:
-                                            if position.get("peak_pnl", 0) - pnl_percent >= ttp_percent:
+                                            peak = position.get("peak_pnl", 0)  
+                                            logger.info(f"{coin} current_pnl: {pnl_percent}, peak_pnl: {peak},  difference is: {peak - pnl_percent} ")
+                                            if peak - pnl_percent >= ttp_percent:
                                                 try:
                                                     logger.info(f"Exiting {coin} position in profit")
                                                     ticker = format_symbol(coin)
@@ -143,7 +145,7 @@ async def subscribe_user_fills(user_address: str,
                                                     # Check if we sent a removal of symbol order through Telegram
                                                     remove_decision = await symbol_manager.is_pending_removal(coin)
                                                     if remove_decision == False:
-                                                        logger.info(f"{coin} still useful, opening new position.")
+                                                        logger.info(f"{coin} opening new position.")
                                                         await asyncio.sleep(1)
                                                         order = await hyperliquid_executor.leveragedMarketOrder(ticker, "buy", buy_size)
                                                         limit_orders = await hyperliquid_executor.create_batch_limit_buy_order_custom_dca(
@@ -243,7 +245,7 @@ async def main():
     buy_size = int(os.getenv("BUY_SIZE"))
     multiplier = float(os.getenv("MULTIPLIER"))
     deviations = ast.literal_eval(os.getenv("DEVIATIONS"))
-    deviations = [int(value) for value in deviations]
+    deviations = [float(value) for value in deviations]
     user_address = os.getenv("PUBLIC_USER_ADDRESS")
     initial_symbols = ast.literal_eval(os.getenv("INITIAL_SYMBOLS"))
     TELEGRAM_LISTENER_BOT_TOKEN = os.getenv("TELEGRAM_LISTENER_TOKEN")
